@@ -1,0 +1,22 @@
+# params/os1_voxel_grid.param.yaml
+---
+
+voxel_grid_cloud_node:
+  ros__parameters:
+    input_topic: "lidar_top/points_transformed"
+    downsample_topic: "points_downsampled"
+    is_approximate: false
+    config:
+      capacity: 55000
+      min_point:
+        x: -55.0
+        y: -55.0
+        z: -2.0
+      max_point:
+        x: 55.0
+        y: 55.0
+        z: 2.5
+      voxel_size:
+        x: 0.2
+        y: 0.2
+        z: 0.2

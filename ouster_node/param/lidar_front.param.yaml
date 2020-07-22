@@ -1,0 +1,21 @@
+# config/os1_test.param.yaml
+---
+
+lidar_front:
+  os1_driver_node:
+    ros__parameters:
+      default_config: False
+      udp_sensor_ip: "192.168.1.60"
+      udp_computer_ip: "192.168.1.166"
+      udp_port_lidar: "7502"
+      udp_port_imu: "7503"
+      lidar_mode: "512x10"
+      generation: "Gen1"
+
+      #udp_driver
+      ip: "192.168.1.166"
+      port: 7502
+      topic: "points"
+      # 1024*64=65536
+      cloud_size:  66000
+      frame_id: "lidar_front"
