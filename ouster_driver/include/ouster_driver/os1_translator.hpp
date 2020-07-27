@@ -98,9 +98,9 @@ public:
   /// Number of points stored in a data block
   static constexpr uint16_t NUM_POINTS_PER_BLOCK = 64U;
   /// Length of an array of the sensor response on "get_beam_intrinsics"
-  static constexpr uint16_t LENGTH_BEAM_INTRINSICS = 64U;
-  /// Length of a single entry of the sensor response on "get_beam_intrinsics"
-  static constexpr uint16_t LENGTH_SINGLE_BEAM_INTRINSICS = 1U;
+  static constexpr uint16_t MAX_LENGTH_BEAM_INTRINSICS = 128U;
+  /// Length of a single entry of the sensor response
+  static constexpr uint16_t LENGTH_SINGLE_ENTRY = 1U;
   /// Number of status bytes for single block
   static constexpr uint32_t AZIMUTH_STATUS_BYTES = 4U;
   /// Number of bytes of a single entry of the sensor response on "get_beam_intrinsics"
@@ -179,6 +179,9 @@ private:
 
   /// \brief Initializes altitude and azimuth lookup tables
   void init_beam_intrinsics(std::string beam_intrinsics, std::string generation);
+
+  /// \brief Initializes packet format of the lidar sensor
+  void init_data_format(std::string data_format);
 
 private:
   static_assert(sizeof(DataChannel) == 12U, "Error OS1 data channel size is incorrect");
@@ -261,17 +264,19 @@ private:
   OUSTER_DRIVER_LOCAL void init_intensity_table();
 
   /// Lookup table for azimuth offset for each firing in a block
-  float32_t m_azimuth_ind[NUM_POINTS_PER_BLOCK];
+  float32_t m_azimuth_ind[MAX_LENGTH_BEAM_INTRINSICS];
   /// Lookup table for altitude angle for each firing in a fire sequence (2 per block)
-  float32_t m_altitude_ind[NUM_POINTS_PER_BLOCK];
+  float32_t m_altitude_ind[MAX_LENGTH_BEAM_INTRINSICS];
   /// Offset of beam from origin of coordinate frame
-  float32_t m_origin_to_beam[LENGTH_SINGLE_BEAM_INTRINSICS];
+  float32_t m_origin_to_beam[LENGTH_SINGLE_ENTRY];
   /// Lookup table for sin calculations
   float32_t m_sin_table[AZIMUTH_ROTATION_RESOLUTION];
   /// Lookup table for cos calculations
   float32_t m_cos_table[AZIMUTH_ROTATION_RESOLUTION];
   /// Lookup table for intensity values
   float32_t m_intensity_table[NUM_INTENSITY_VALUES];
+  /// Pixels per column coming from sensor
+  float32_t m_pixels_per_column[LENGTH_SINGLE_ENTRY];
   /// Id for firing sequence
   uint16_t m_fire_id;
   /// Configurated radial resolution

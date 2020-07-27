@@ -10,7 +10,7 @@ lidar_top:
       udp_port_lidar: "7502"
       udp_port_imu: "7503"
       lidar_mode: "512x10"
-      generation: "Gen1"
+      generation: "Gen2"
 
       #udp_driver
       ip: "192.168.1.166"

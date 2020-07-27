@@ -21,6 +21,8 @@
 #include <string>
 #include "ouster_driver/os1_translator.hpp"
 
+#include <iostream>
+
 namespace autoware
 {
 namespace drivers
@@ -30,8 +32,6 @@ namespace ouster_driver
 
 using autoware::common::types::float32_t;
 using autoware::common::types::PointXYZIF;
-
-static const uint16_t POINTS_PER_FIRE_SEQ = 64U;
 
 ////////////////////////////////////////////////////////////////////////////////
 OS1Translator::OS1Translator(const Config & config)
@@ -71,7 +71,9 @@ void OS1Translator::convert(const Packet & pkt, std::vector<PointXYZIF> & output
         block.encoder_count[2],
         block.encoder_count[3]);
       // get distance/intensity for each point in block, convert to cartesian
-      for (uint16_t jdx = 0U; jdx < POINTS_PER_FIRE_SEQ; ++jdx) {
+      uint16_t size_column = static_cast<uint16_t>(m_pixels_per_column[0]);
+
+      for (uint16_t jdx = 0U; jdx < size_column; ++jdx) {
         float32_t azimuth = m_azimuth_ind[jdx];
         float32_t altitude = m_altitude_ind[jdx];
 
@@ -180,17 +182,33 @@ void OS1Translator::init_beam_intrinsics(std::string beam_intrinsics, std::strin
   std::string azi_sub_str = beam_intrinsics.substr(
     beam_intrinsics.find("beam_azimuth_angles"), beam_intrinsics.size());
 
-  parse_json_string(azi_sub_str, m_azimuth_ind, LENGTH_BEAM_INTRINSICS);
-  parse_json_string(alt_sub_str, m_altitude_ind, LENGTH_BEAM_INTRINSICS);
+  uint16_t size_tables = static_cast<uint16_t>(m_pixels_per_column[0]);
+
+  memset(m_azimuth_ind, 0.0, sizeof(m_azimuth_ind));
+  memset(m_altitude_ind, 0.0, sizeof(m_altitude_ind));
+
+  // pixels_per_column is polled value from sensor
+  parse_json_string(azi_sub_str, m_azimuth_ind, size_tables);
+  parse_json_string(alt_sub_str, m_altitude_ind, size_tables);
 
   if (generation == "Gen2") {
     origin_sub_str = beam_intrinsics.substr(
       beam_intrinsics.find("lidar_origin_to_beam_origin_mm"), beam_intrinsics.size());
-    parse_json_string(origin_sub_str, m_origin_to_beam, LENGTH_SINGLE_BEAM_INTRINSICS);
+    parse_json_string(origin_sub_str, m_origin_to_beam, LENGTH_SINGLE_ENTRY);
   } else {
     // in case of older generation ignore offset
     m_origin_to_beam[0] = 0.0;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void OS1Translator::init_data_format(std::string data_format)
+{
+  std::string origin_sub_str = "";
+  std::string pixels_per_column_sub_str = data_format.substr(
+    data_format.find("pixels_per_column"), data_format.size());
+
+  parse_json_string(pixels_per_column_sub_str, m_pixels_per_column, LENGTH_SINGLE_ENTRY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

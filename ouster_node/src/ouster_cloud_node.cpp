@@ -60,13 +60,15 @@ OusterCloudNode::OusterCloudNode(
   bool8_t default_config = static_cast<bool8_t>(
     declare_parameter("default_config").get<bool8_t>());
 
-  std::cout << "THIS LINE IS EXECUTED" << std::endl;
   if(!default_config) {
     // do TCP initialization of client
     init_client();
   } else {
     init_default_client();
   }
+
+  std::string data_format = get_parameter("lidar_data_format").as_string();
+  m_translator.init_data_format(data_format);
 
   // set beam_intrinsics in translator
   std::string beam = get_parameter("beam_intrinsics").as_string();
@@ -96,11 +98,14 @@ OusterCloudNode::OusterCloudNode(
   bool8_t default_config = static_cast<bool8_t>(
     declare_parameter("default_config").get<bool8_t>());
   if(!default_config) {
-    // do TCP initialization of client0000000000000000000000000000000000000000
+    // do TCP initialization of client
     init_client();
   } else {
     init_default_client();
   }
+
+  std::string data_format = get_parameter("lidar_data_format").as_string();
+  m_translator.init_data_format(data_format);
 
   // pass beam_intrinsics and sensor-generation to translator
   std::string beam = get_parameter("beam_intrinsics").as_string();
@@ -199,7 +204,7 @@ uint16_t OusterCloudNode::cfg_socket(const char * addr, const char * udp_port)
 ////////////////////////////////////////////////////////////////////////////////
 void OusterCloudNode::init_client()
 {
-  std::cout << "configuration via tcp" << std::endl;
+  std::cout << "Configuration via TCP startet." << std::endl;
 
   std::string udp_sensor_ip = static_cast<std::string>(
     declare_parameter("udp_sensor_ip").get<std::string>());
@@ -233,6 +238,7 @@ void OusterCloudNode::init_client()
       get_parameter("lidar_mode").as_string()}, res);
   success &= res == "set_config_param";
 
+  // get necessary data from sensor (only beam_intrinsics and data_format used)
   success &= do_tcp_cmd(sock_fd, {"get_beam_intrinsics"}, res);
   declare_parameter("beam_intrinsics", res);
 
@@ -242,8 +248,15 @@ void OusterCloudNode::init_client()
   success &= do_tcp_cmd(sock_fd, {"get_lidar_intrinsics"}, res);
   declare_parameter("lidar_instrinsics", res);
 
+  success &= do_tcp_cmd(sock_fd, {"get_lidar_data_format​"}, res);
+  declare_parameter("lidar_data_format", res);
+
   success &= do_tcp_cmd(sock_fd, {"reinitialize"}, res);
   success &= res == "reinitialize";
+
+  if(success) {
+    std::cout << "Configuration finished successful." << std::endl;
+  }
 
   close(sock_fd);
 }
@@ -251,7 +264,7 @@ void OusterCloudNode::init_client()
 ////////////////////////////////////////////////////////////////////////////////
 void OusterCloudNode::init_default_client()
 {
-  std::cout << "default configuration" << std::endl;
+  std::cout << "IN DEFAULT CONFIG!" << std::endl;
   // Values from parameter file
   declare_parameter("udp_sensor_ip");
   declare_parameter("udp_computer_ip");
@@ -261,6 +274,8 @@ void OusterCloudNode::init_default_client()
   // beam_intrinsics standard config
   std::string beam_intrinsics = "{\"beam_altitude_angles\": [45.82, 44.11, 42.85, 41.17, 39.93, 38.24, 36.99, 35.32, 34.06, 32.42, 31.15, 29.54, 28.26, 26.67, 25.38, 23.81, 22.51, 20.97, 19.66, 18.15, 16.82, 15.33, 13.99, 12.53, 11.18, 9.73, 8.369999999999999, 6.94, 5.56, 4.16, 2.77, 1.37, -0.04, -1.41, -2.84, -4.19, -5.64, -6.99, -8.449999999999999, -9.789999999999999, -11.28, -12.59, -14.11, -15.41, -16.95, -18.25, -19.8, -21.08, -22.67, -23.94, -25.55, -26.81, -28.44, -29.7, -31.35, -32.6, -34.28, -35.53, -37.24, -38.48, -40.22, -41.46, -43.23, -44.47], \"beam_azimuth_angles\": [10.85, -3.53, 10.46, -3.4, 10.11, -3.28, 9.81, -3.19, 9.56, -3.11, 9.33, -3.04, 9.130000000000001, -2.97, 8.960000000000001, -2.92, 8.82, -2.87, 8.69, -2.84, 8.59, -2.81, 8.51, -2.79, 8.44, -2.77, 8.4, -2.76, 8.359999999999999, -2.75, 8.33, -2.75, 8.32, -2.76, 8.34, -2.76, 8.359999999999999, -2.78, 8.390000000000001, -2.8, 8.44, -2.82, 8.51, -2.86, 8.59, -2.89, 8.69, -2.93, 8.81, -2.99, 8.94, -3.04, 9.1, -3.11, 9.300000000000001, -3.19, 9.52, -3.28, 9.779999999999999, -3.39, 10.09, -3.51, 10.45, -3.66], \"lidar_origin_to_beam_origin_mm\": 27.67}";
   declare_parameter("beam_intrinsics", beam_intrinsics);
+
+  std::cout << "Default configuration loaded: OS2-64" << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
