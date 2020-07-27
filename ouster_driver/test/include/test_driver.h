@@ -74,7 +74,7 @@ TEST_F(ouster_driver, basic)
   driver.convert(pkt, out);
   EXPECT_LE(out.size(),
   NUM_HEADER_BYTES +
-  OS1Translator::NUM_POINTS_PER_BLOCK * OS1Translator::NUM_BLOCKS_PER_PACKET * NUM_BYTES_PER_PIXEL +
+  OS1Translator::MAX_NUM_POINTS_PER_BLOCK * OS1Translator::NUM_BLOCKS_PER_PACKET * NUM_BYTES_PER_PIXEL +
   NUM_TRAILER_BYTES);
 
   // Mostly just a sanity check: All points should fall in a pie slice

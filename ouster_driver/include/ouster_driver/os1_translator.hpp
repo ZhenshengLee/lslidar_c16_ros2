@@ -96,7 +96,7 @@ public:
   /// Number of data blocks per data packet
   static constexpr uint16_t NUM_BLOCKS_PER_PACKET = 16U;
   /// Number of points stored in a data block
-  static constexpr uint16_t NUM_POINTS_PER_BLOCK = 64U;
+  static constexpr uint16_t MAX_NUM_POINTS_PER_BLOCK = 128U;
   /// Length of an array of the sensor response on "get_beam_intrinsics"
   static constexpr uint16_t MAX_LENGTH_BEAM_INTRINSICS = 128U;
   /// Length of a single entry of the sensor response
@@ -157,7 +157,7 @@ private:
     uint8_t measurement_id[2U];
     uint8_t frame_id[2U];
     uint8_t encoder_count[4U];
-    DataChannel channels[NUM_POINTS_PER_BLOCK];
+    DataChannel channels[MAX_NUM_POINTS_PER_BLOCK];
     uint8_t azimuth_status[4U];
   };
 
@@ -185,12 +185,12 @@ private:
 
 private:
   static_assert(sizeof(DataChannel) == 12U, "Error OS1 data channel size is incorrect");
-  static_assert(sizeof(DataBlock) == 788U, "Error OS1 data block size is incorrect");
+  static_assert(sizeof(DataBlock) == 1556, "Error OS1 data block size is incorrect");
   // cannot assert packet size since it depends on sensor type
   // static_assert(sizeof(Packet) == 12608U, "Error OS1 packet size is incorrect");
   // Ensure that a full packet will fit into a point block
   static_assert(static_cast<uint32_t>(POINT_BLOCK_CAPACITY) >=
-    ((NUM_POINTS_PER_BLOCK * NUM_BLOCKS_PER_PACKET) + 1U),
+    ((MAX_NUM_POINTS_PER_BLOCK * NUM_BLOCKS_PER_PACKET) + 1U),
     "Number of points from one OS1 packet cannot fit into a point block");
 
   /// \brief Converts polar coordinates into cartesian (xyz), not threadsafe: modifies a
