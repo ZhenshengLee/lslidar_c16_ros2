@@ -93,7 +93,7 @@ void OS1Translator::convert(const Packet & pkt, std::vector<PointXYZIF> & output
 
         // theta, phi in radiant
         const float32_t phi = (TAU / 360.0f) * altitude;
-        const float32_t th_int = TAU * (azimuth / 360.0f);
+        const float32_t th_int = TAU * ((azimuth + 180.0f) / 360.0f);
         const float32_t th_enc = TAU * (static_cast<float32_t>(encoder) /
           AZIMUTH_ROTATION_RESOLUTION);
         const float32_t th = th_enc + th_int;
